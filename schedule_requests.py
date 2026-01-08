@@ -11,7 +11,6 @@ from misc import parse_group_by_name, Group, UnHandlingGroupException, fetch_jso
 
 async def get_all_groups_by_faculty_key(show_warnings: bool = False) -> dict[str, list[Group]]:
     try:
-        # resp: Response = aiohttp.request(API_ALL_GROUPS)
         async with aiohttp.ClientSession() as session:
             jsonned: dict[str, list[str, str]] = await fetch_json(session, API_ALL_GROUPS)
     except Exception as e:
