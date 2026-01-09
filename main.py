@@ -2,6 +2,8 @@ import argparse
 import asyncio
 import json
 from dataclasses import dataclass
+from datetime import date
+from pathlib import Path
 from typing import Optional, Coroutine, Any
 
 from misc import Lesson, CustomEncoder, AllGroupsSchedules, Group
@@ -12,6 +14,8 @@ from schedule_requests import get_groups_schedules, get_all_groups_by_faculty_ke
 class Args:
     prettify: bool
     output: Optional[str]
+    output_directory: Optional[str]
+    output_auto: Optional[str]
     show_warnings: bool
 
 
@@ -45,16 +49,29 @@ async def process_schedule(show_warnings: bool = True) -> AllGroupsSchedules:
 
 
 async def main(args: Args) -> None:
-    result_schedules: AllGroupsSchedules = await process_schedule(args.show_warnings)
+    schedules: AllGroupsSchedules = await process_schedule(args.show_warnings)
 
-    if args.output is not None:
-        dump_schedules(result_schedules, args.output, args.prettify)
+    if args.output is not None or args.output_auto is not None:
+        if args.output_auto is not None:
+            output_path: str = f"schedules-{date.today()}.json"
+        else:
+            output_path: str = args.output
+
+        if args.output_directory is not None:
+            directory: Path = Path(args.output_directory)
+            directory.mkdir(parents=True, exist_ok=True)
+            output_path = directory / output_path
+
+        dump_schedules(schedules, output_path, args.prettify)
 
 
 def parse_args() -> Args:
     parser = argparse.ArgumentParser(description="Парсер расписания ТвГУ")
 
     parser.add_argument("-o", "--output", help="Путь к выходному файлу для экспорта расписаний")
+    parser.add_argument("-od", "--output-directory", help="Путь к директории для экспорта расписаний")
+    parser.add_argument("-oa", "--output-auto", action="store_true",
+                        help="Автоматическое формирование имени выходного файла в виде даты")
     parser.add_argument("-p", "--prettify", action="store_true", help="Форматированный вывод JSON")
     parser.add_argument("-w", "--warnings", action="store_true", help="Показывать предупреждения")
 
@@ -63,11 +80,18 @@ def parse_args() -> Args:
     return Args(
         prettify=args.prettify,
         output=args.output,
-        show_warnings=args.warnings
+        output_directory=args.output_directory,
+        output_auto=args.output_auto,
+        show_warnings=args.warnings,
     )
 
 
 if __name__ == "__main__":
     # Python >=3.10
 
-    asyncio.run(main(parse_args()))
+    args: Args = parse_args()
+
+    if args.output is not None and args.output_auto is not None:
+        raise ValueError("Одновременно можно использовать параметр -o и -oa")
+
+    asyncio.run(main(args))
