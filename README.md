@@ -57,14 +57,14 @@ pip install aiohttp requests
 ## В виде CLI-утилиты
 
 ```bash
-python main.py
+python -m tvgu_schedule_parser
 ```
 В этом режиме данные загружаются, но никуда не сохраняются: бесполезно
 
 ## Экспорт расписаний в файл
 
 ```bash
-python main.py --output schedules.json --prettify --warnings
+python -m tvgu_schedule_parser --output schedules.json --prettify --warnings
 ```
 `--output schedules.json` – Файл для экспорта в JSON формате
 
@@ -73,8 +73,8 @@ python main.py --output schedules.json --prettify --warnings
 `--warnings` – Выводить в консоль предупреждения (например, при невалидных группах).
 
 ## Используя функцию
-В `main.py` есть функция `process_schedule` – просто вызывайте её (не забудьте `await`) и получите через несколько секунд расписание всех групп.
-Формат возвращаемоего значения: `dict[str, dict[Group, tuple[Lesson]]]` – Словарь с ключом в виде кода факультета, затем значение со словарём с ключом в виде группы и значем в виде списка пар.
+Используйте функцию `get_all_tvgu_schedules()` – просто вызывайте её (не забудьте `await`) и получите через несколько секунд расписание всех групп.
+Формат возвращаемого значения: `dict[str, dict[Group, tuple[Lesson]]]` – Словарь с ключом в виде кода факультета, затем значение со словарём с ключом в виде группы и значением в виде списка пар.
 
 Структурируйте по неделе сами.
 
