@@ -42,7 +42,7 @@ class LessonTime:
 
 @dataclass(frozen=True, kw_only=True)
 class Teacher:
-    fullname: str
+    initials: str
     role: str
 
 
@@ -163,7 +163,7 @@ def handle_teachers(teachers_str: str) -> set[Teacher]:
     for teacher_info in teachers_infos:
         teachers.add(
             Teacher(
-                fullname=teacher_info[0].strip(),
+                initials=teacher_info[0].strip(),
                 role=teacher_info[1].strip(),
             )
         )
