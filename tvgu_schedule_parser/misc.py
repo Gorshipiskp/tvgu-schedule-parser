@@ -60,7 +60,7 @@ class Lesson:
     subgroup: Optional[str]
 
 
-AllGroupsSchedules: TypeAlias = dict[str, dict[Group, tuple[Lesson]]]
+AllGroupsSchedules: TypeAlias = dict[str, dict[Group, Optional[tuple[Lesson]]]]
 
 
 def group_type_checker(faculty_code: str, name_parts: dict[str, str]) -> GroupType:
