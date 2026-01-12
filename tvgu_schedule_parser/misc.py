@@ -59,6 +59,13 @@ class Lesson:
     teachers: tuple[Teacher]
     subgroup: Optional[str]
 
+    def get_unique_id(self) -> str:
+        subject_name_hash: int = hash(self.subject_name)
+        place_hash: int = hash(self.place)
+
+        return f"{self.week_mark}-{self.week_day}-{self.lesson_number}-" \
+               f"{self.subject_type}.{subject_name_hash}.{place_hash}"
+
 
 AllGroupsSchedules: TypeAlias = dict[str, dict[Group, Optional[tuple[Lesson]]]]
 
@@ -236,6 +243,7 @@ def handle_schedule_response(json_page: dict[str, Union[str, dict[str, Any]]]) -
     for lesson_info in lessons_containers:
         try:
             lesson: Lesson = handle_lesson(lesson_info, times)
+            print(lesson.get_unique_id())
         except SkipLessonException:
             continue
 
