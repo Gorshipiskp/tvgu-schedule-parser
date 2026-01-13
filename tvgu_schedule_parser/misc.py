@@ -186,7 +186,7 @@ def handle_lesson(lesson_info: dict[str, Any], times: dict[int, LessonTime]) -> 
     size_x: Optional[int] = lesson_info.get("sizeX")
     position_x: Optional[int] = lesson_info.get("positionX")
 
-    texts: list[Optional[list[str]]] = lesson_info.get("texts")
+    texts: list[Optional[str]] = lesson_info.get("texts")
 
     if any(map(lambda x: x is None, [
         lesson_number, week_day, week_mark, size_x, position_x, texts
@@ -197,9 +197,9 @@ def handle_lesson(lesson_info: dict[str, Any], times: dict[int, LessonTime]) -> 
 
     subgroup: Optional[int] = position_x if size_x == 2 else None
 
-    subject: str = texts[1]
-    teachers_str: str = texts[2]
-    place: str = texts[3]
+    subject: str = None if texts[1] is None else texts[1].strip()
+    teachers_str: str = None if texts[2] is None else texts[2].strip()
+    place: str = None if texts[3] is None else texts[3].strip()
 
     subject_type: SubjectType = determine_subject_type(subject)
     subject_name: str = clean_subject_name(subject, subject_type)
