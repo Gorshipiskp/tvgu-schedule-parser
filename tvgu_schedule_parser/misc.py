@@ -280,7 +280,6 @@ def handle_schedule_response(json_page: dict[str, Union[str, dict[str, Any]]]) -
     for lesson_info in lessons_containers:
         try:
             lesson: Lesson = handle_lesson(lesson_info, times)
-            print(lesson.get_unique_id())
         except SkipLessonException:
             continue
 
