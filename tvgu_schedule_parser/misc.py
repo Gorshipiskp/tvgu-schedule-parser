@@ -27,11 +27,28 @@ class TimetableNotFoundException(Exception):
 class Group:
     origin_name: str
     faculty_code: str
-    note: Union[str, None]
-    course: Union[int, None]
+    note: Optional[str]
+    course: Optional[int]
     type: GroupType
     number: int
-    subgroup_letter: Union[str, None]
+    subgroup_letter: Optional[str]
+
+    def _identify(self) -> tuple[str, str, int, GroupType, Optional[str], Optional[str]]:
+        return (
+            self.origin_name,
+            self.faculty_code,
+            self.number,
+            self.type,
+            self.subgroup_letter
+        )
+
+    def __hash__(self) -> int:
+        return hash(self._identify())
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Group):
+            return self._identify() == other._identify()
+        return NotImplemented
 
 
 @dataclass(frozen=True, kw_only=True)
