@@ -59,19 +59,22 @@ class Lesson:
     teachers: tuple[Teacher]
     subgroup: Optional[str]
 
-    def get_unique_id(self) -> str:
-        subject_name_hash: int = hash(self.subject_name)
-        place_hash: int = hash(self.place)
-
-        return f"{self.week_mark}-{self.week_day}-{self.lesson_number}-" \
-               f"{self.subject_type}.{subject_name_hash}.{place_hash}"
+    def _identify(self) -> tuple[WeekMark, int, int, Optional[SubjectType], Optional[str], Optional[str]]:
+        return (
+            self.week_mark,
+            self.week_day,
+            self.lesson_number,
+            self.subject_type,
+            self.subject_name,
+            self.place
+        )
 
     def __hash__(self) -> int:
-        return hash(self.get_unique_id())
+        return hash(self._identify())
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Lesson):
-            return self.get_unique_id() == other.get_unique_id()
+            return self._identify() == other._identify()
         return NotImplemented
 
 
