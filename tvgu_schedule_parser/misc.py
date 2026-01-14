@@ -5,7 +5,7 @@ from typing import Optional, Union, Any, TypeAlias
 
 from aiohttp import ClientSession
 
-from .config import REQUEST_TIMEOUT, SKIP_BAD_LESSONS
+from .config import REQUEST_TIMEOUT, SKIP_BAD_LESSONS, SKIP_UNKNOWN_SUBJECT_TYPES
 from .consts import GROUP_TYPE_ASPIRANTES, GROUP_NAME_PARTS_ASPIRANTES, GroupType, GROUP_TYPE_MASTERS, \
     GROUP_TYPE_REGULAR, GROUP_NAME_ASPIRANTES_PATTERN, GROUP_NAME_DEFAULT_PATTERN, GROUP_NAME_PARTS_DEFAULT, WeekMark, \
     SubjectType, SUBJECT_TYPES
@@ -53,9 +53,9 @@ class Lesson:
     week_mark: WeekMark
     time_start: int
     time_end: int
-    subject_name: str
-    subject_type: SubjectType
-    place: str
+    subject_name: Optional[str]
+    subject_type: Optional[SubjectType]
+    place: Optional[str]
     teachers: tuple[Teacher]
     subgroup: Optional[str]
 
@@ -139,7 +139,10 @@ def handle_lesson_times(lesson_time_data: list[dict[str, str]]) -> dict[int, Les
     return times
 
 
-def determine_subject_type(subject_str: str) -> SubjectType:
+def determine_subject_type(subject_str: Optional[str]) -> Optional[SubjectType]:
+    if subject_str is None:
+        return None
+
     for subject_type, type_phrases in SUBJECT_TYPES.items():
         for phrase in type_phrases:
             if phrase.lower() in subject_str.lower():
@@ -147,7 +150,10 @@ def determine_subject_type(subject_str: str) -> SubjectType:
     return "unknown"
 
 
-def clean_subject_name(subject_str: str, subject_type: SubjectType) -> str:
+def clean_subject_name(subject_str: Optional[str], subject_type: Optional[SubjectType]) -> Optional[str]:
+    if subject_str is None or subject_type is None:
+        return None
+
     for subject_type_phrase in SUBJECT_TYPES[subject_type]:
         subject_str = re.sub(
             rf"\s*\({re.escape(subject_type_phrase)}\)\s*", "", subject_str,
@@ -186,7 +192,7 @@ def handle_lesson(lesson_info: dict[str, Any], times: dict[int, LessonTime]) -> 
     size_x: Optional[int] = lesson_info.get("sizeX")
     position_x: Optional[int] = lesson_info.get("positionX")
 
-    texts: list[Optional[str]] = lesson_info.get("texts")
+    texts: Optional[list[str]] = lesson_info.get("texts")
 
     if any(map(lambda x: x is None, [
         lesson_number, week_day, week_mark, size_x, position_x, texts
@@ -197,12 +203,15 @@ def handle_lesson(lesson_info: dict[str, Any], times: dict[int, LessonTime]) -> 
 
     subgroup: Optional[int] = position_x if size_x == 2 else None
 
-    subject: str = None if texts[1] is None else texts[1].strip()
-    teachers_str: str = None if texts[2] is None else texts[2].strip()
-    place: str = None if texts[3] is None else texts[3].strip()
+    subject: Optional[str] = None if texts[1] is None else texts[1].strip()
+    teachers_str: Optional[str] = None if texts[2] is None else texts[2].strip()
+    place: Optional[str] = None if texts[3] is None else texts[3].strip()
 
-    subject_type: SubjectType = determine_subject_type(subject)
-    subject_name: str = clean_subject_name(subject, subject_type)
+    subject_type: Optional[SubjectType] = determine_subject_type(subject)
+    subject_name: Optional[str] = clean_subject_name(subject, subject_type)
+
+    if SKIP_UNKNOWN_SUBJECT_TYPES and subject_type is None:
+        raise SkipLessonException
 
     return Lesson(
         lesson_number=lesson_number,
