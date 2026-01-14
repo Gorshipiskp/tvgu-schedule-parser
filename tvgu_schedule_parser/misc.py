@@ -66,6 +66,14 @@ class Lesson:
         return f"{self.week_mark}-{self.week_day}-{self.lesson_number}-" \
                f"{self.subject_type}.{subject_name_hash}.{place_hash}"
 
+    def __hash__(self) -> int:
+        return hash(self.get_unique_id())
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Lesson):
+            return self.get_unique_id() == other.get_unique_id()
+        return NotImplemented
+
 
 AllGroupsSchedules: TypeAlias = dict[str, dict[Group, Optional[tuple[Lesson]]]]
 
