@@ -275,15 +275,14 @@ def handle_schedule_response(json_page: dict[str, Union[str, dict[str, Any]]]) -
 
     times: dict[int, LessonTime] = handle_lesson_times(lesson_time_data)
 
-    #  `set`, чтобы убрать дубликаты
-    lessons: set[Lesson] = set()
+    lessons: list[Lesson] = []
     for lesson_info in lessons_containers:
         try:
             lesson: Lesson = handle_lesson(lesson_info, times)
         except SkipLessonException:
             continue
 
-        lessons.add(lesson)
+        lessons.append(lesson)
 
     return tuple(lessons)
 
