@@ -62,6 +62,20 @@ class Teacher:
     initials: str
     role: str
 
+    def _identify(self) -> tuple[str, str]:
+        return (
+            self.initials,
+            self.role
+        )
+
+    def __hash__(self) -> int:
+        return hash(self._identify())
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Teacher):
+            return self._identify() == other._identify()
+        return NotImplemented
+
 
 @dataclass(frozen=True, kw_only=True)
 class Lesson:
@@ -283,7 +297,6 @@ def handle_schedule_response(json_page: dict[str, Union[str, dict[str, Any]]]) -
             continue
 
         lessons.append(lesson)
-
     return tuple(lessons)
 
 
