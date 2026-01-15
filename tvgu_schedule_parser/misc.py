@@ -58,7 +58,7 @@ class LessonTime:
 
 
 @dataclass(frozen=True, kw_only=True)
-class Teacher:
+class TeacherSmall:
     initials: str
     role: str
 
@@ -72,7 +72,7 @@ class Teacher:
         return hash(self._identify())
 
     def __eq__(self, other) -> bool:
-        if isinstance(other, Teacher):
+        if isinstance(other, TeacherSmall):
             return self._identify() == other._identify()
         return NotImplemented
 
@@ -87,7 +87,7 @@ class Lesson:
     subject_name: Optional[str]
     subject_type: Optional[SubjectType]
     place: Optional[str]
-    teachers: tuple[Teacher]
+    teachers: tuple[TeacherSmall]
     subgroup: Optional[str]
 
     def _identify(self) -> tuple[WeekMark, int, int, Optional[SubjectType], Optional[str], Optional[str]]:
@@ -211,13 +211,13 @@ def parse_teacher_name(teacher_str: str) -> list[tuple[str, str]]:
     return [(teacher_name.strip(), teacher_role.strip()) for teacher_name, teacher_role in teachers]
 
 
-def handle_teachers(teachers_str: str) -> set[Teacher]:
-    teachers: set[Teacher] = set()
+def handle_teachers(teachers_str: str) -> set[TeacherSmall]:
+    teachers: set[TeacherSmall] = set()
     teachers_infos: list[tuple[str, str]] = re.findall(r'([^,(]+?)\s*\(([^()]*(?:\(.*?\)[^()]*)*)\)', teachers_str)
 
     for teacher_info in teachers_infos:
         teachers.add(
-            Teacher(
+            TeacherSmall(
                 initials=teacher_info[0].strip(),
                 role=teacher_info[1].strip(),
             )
