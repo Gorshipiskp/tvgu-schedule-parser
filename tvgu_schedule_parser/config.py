@@ -11,6 +11,9 @@ GIA_SCHEDULE_TYPE: Final[int] = 3
 REQUEST_TIMEOUT: Final[int] = 30
 MAX_CONCURRENT_REQUESTS: Final[int] = 50
 
-#  Пропускать пары с некорректной информацией
+# Рекомендуется пропускать аспирантуру ввиду отсутствия поддержки
+# (неопределённое поведение при использовании tvgu-data-hub)
+SKIP_ASPIRANTES: Final[bool] = True
+# Пропускать пары с некорректной информацией
 SKIP_BAD_LESSONS: Final[bool] = False
 SKIP_UNKNOWN_SUBJECT_TYPES: Final[bool] = False

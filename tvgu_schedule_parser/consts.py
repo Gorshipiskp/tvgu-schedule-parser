@@ -5,7 +5,7 @@ GroupType: TypeAlias = Literal["master", "regular", "aspirantes"]
 
 GROUP_TYPE_ASPIRANTES: Final[GroupType] = "aspirantes"
 GROUP_TYPE_MASTERS: Final[GroupType] = "master"
-#  regular - это бакалавриат и специалитет
+# regular - это бакалавриат и специалитет
 GROUP_TYPE_REGULAR: Final[GroupType] = "regular"
 
 # GROUPS_TYPES_SIGN: Final[dict[GROUP_TYPE, str]] = {"master": "М", "regular": ""}
@@ -15,7 +15,7 @@ GROUP_NAME_PARTS_DEFAULT: Final[tuple[str, ...]] = (
     "is_master_1", "course", "group_number", "is_master_2", "subgroup_letter", "note"
 )
 
-#  Паттерны могут быть неточными: через время логика названий групп уточнится
+# Паттерны могут быть неточными: через время логика названий групп уточнится
 GROUP_NAME_DEFAULT_PATTERN: re.Pattern = re.compile(r"(М)?([0-9])([0-9])(М)?([а-яА-ЯеёЕЁ])?(?:\((.+)\))?")
 
 GROUP_NAME_PARTS_ASPIRANTES: Final[tuple[str, ...]] = (

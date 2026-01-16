@@ -45,7 +45,7 @@ async def get_groups_schedules(groups: list[Group]) -> dict[Group, tuple[Lesson]
         ]
         schedule_pages: list[dict[str, Union[str, dict[str, Any]]]] = await asyncio.gather(*tasks)
 
-    #  Не беспокоимся: датакласс (Group) с параметром `frozen=True` генерирует `self.__hash__` сам, а значит может
-    #  использоваться в качестве ключа словаря
+    # Не беспокоимся: датакласс (Group) с параметром `frozen=True` генерирует `self.__hash__` сам, а значит может
+    # использоваться в качестве ключа словаря
     # `asyncio.gather` сохраняет порядок, несмотря на конкурентность выполнения запросов
     return dict(zip(groups, list(map(handle_schedule_response, schedule_pages))))
