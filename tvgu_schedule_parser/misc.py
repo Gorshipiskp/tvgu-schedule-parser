@@ -32,11 +32,6 @@ class GroupBase:
     number: int
     subgroup_letter: Optional[str]
 
-
-@dataclass(frozen=True, kw_only=True, slots=True)
-class Group(GroupBase):
-    faculty_code: str
-
     def _identify(self) -> tuple[str, int, GroupType, str, Optional[str]]:
         return (
             self.origin_name,
@@ -52,6 +47,11 @@ class Group(GroupBase):
         if isinstance(other, Group):
             return self._identify() == other._identify()
         return NotImplemented
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class Group(GroupBase):
+    faculty_code: str
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
