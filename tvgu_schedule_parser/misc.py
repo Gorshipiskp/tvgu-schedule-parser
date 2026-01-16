@@ -24,19 +24,22 @@ class TimetableNotFoundException(Exception):
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class Group:
+class GroupBase:
     origin_name: str
-    faculty_code: str
     note: Optional[str]
     course: Optional[int]
     type: GroupType
     number: int
     subgroup_letter: Optional[str]
 
-    def _identify(self) -> tuple[str, str, int, GroupType, Optional[str], Optional[str]]:
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class Group(GroupBase):
+    faculty_code: str
+
+    def _identify(self) -> tuple[str, int, GroupType, str, Optional[str]]:
         return (
             self.origin_name,
-            self.faculty_code,
             self.number,
             self.type,
             self.subgroup_letter
