@@ -23,7 +23,7 @@ class TimetableNotFoundException(Exception):
     pass
 
 
-@dataclass(frozen=True, kw_only=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class Group:
     origin_name: str
     faculty_code: str
@@ -51,13 +51,13 @@ class Group:
         return NotImplemented
 
 
-@dataclass(frozen=True, kw_only=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class LessonTime:
     start: int
     end: int
 
 
-@dataclass(frozen=True, kw_only=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class TeacherSmall:
     initials: str
     role: str
@@ -77,8 +77,8 @@ class TeacherSmall:
         return NotImplemented
 
 
-@dataclass(frozen=True, kw_only=True)
-class Lesson:
+@dataclass(frozen=True, kw_only=True, slots=True)
+class LessonBase:
     lesson_number: int
     week_day: int
     week_mark: WeekMark
@@ -87,7 +87,6 @@ class Lesson:
     subject_name: Optional[str]
     subject_type: Optional[SubjectType]
     place: Optional[str]
-    teachers: tuple[TeacherSmall]
     subgroup: Optional[str]
 
     def _identify(self) -> tuple[WeekMark, int, int, Optional[SubjectType], Optional[str], Optional[str]]:
@@ -104,9 +103,14 @@ class Lesson:
         return hash(self._identify())
 
     def __eq__(self, other) -> bool:
-        if isinstance(other, Lesson):
+        if isinstance(other, LessonBase):
             return self._identify() == other._identify()
         return NotImplemented
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class Lesson(LessonBase):
+    teachers: tuple[TeacherSmall]
 
 
 AllGroupsSchedules: TypeAlias = dict[str, dict[Group, Optional[tuple[Lesson]]]]
