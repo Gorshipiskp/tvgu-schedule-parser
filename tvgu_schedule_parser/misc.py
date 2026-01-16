@@ -84,10 +84,15 @@ class LessonBase:
     week_mark: WeekMark
     time_start: int
     time_end: int
-    subject_name: Optional[str]
-    subject_type: Optional[SubjectType]
     place: Optional[str]
     subgroup: Optional[str]
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class Lesson(LessonBase):
+    teachers: tuple[TeacherSmall]
+    subject_name: Optional[str]
+    subject_type: Optional[SubjectType]
 
     def _identify(self) -> tuple[WeekMark, int, int, Optional[SubjectType], Optional[str], Optional[str]]:
         return (
@@ -103,14 +108,9 @@ class LessonBase:
         return hash(self._identify())
 
     def __eq__(self, other) -> bool:
-        if isinstance(other, LessonBase):
+        if isinstance(other, Lesson):
             return self._identify() == other._identify()
         return NotImplemented
-
-
-@dataclass(frozen=True, kw_only=True, slots=True)
-class Lesson(LessonBase):
-    teachers: tuple[TeacherSmall]
 
 
 AllGroupsSchedules: TypeAlias = dict[str, dict[Group, Optional[tuple[Lesson]]]]
