@@ -10,7 +10,7 @@ from .misc import Lesson, CustomEncoder, AllGroupsSchedules
 from .parser import get_all_tvgu_schedules
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class Args:
     prettify: bool
     output: Optional[str]

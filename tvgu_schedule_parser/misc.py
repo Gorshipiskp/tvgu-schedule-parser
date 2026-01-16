@@ -27,7 +27,7 @@ class TimetableNotFoundException(Exception):
     pass
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class GroupBase:
     origin_name: str
     note: Optional[str]
@@ -53,18 +53,18 @@ class GroupBase:
         return NotImplemented
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class Group(GroupBase):
     faculty_code: str
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class LessonTime:
     start: int
     end: int
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class TeacherSmall:
     initials: str
     role: str
@@ -84,7 +84,7 @@ class TeacherSmall:
         return NotImplemented
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class LessonBase:
     lesson_number: int
     week_day: int
@@ -94,7 +94,7 @@ class LessonBase:
     subgroup: Optional[str]
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class Lesson(LessonBase):
     teachers: tuple[TeacherSmall]
     subject_name: Optional[str]
