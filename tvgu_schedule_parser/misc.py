@@ -1,11 +1,11 @@
 import re
 from dataclasses import dataclass
 from json import JSONEncoder
-from typing import Optional, Union, Any, TypeAlias
+from typing import Optional, TypeAlias
 
 from aiohttp import ClientSession
 
-from .config import REQUEST_TIMEOUT, SKIP_BAD_LESSONS, SKIP_UNKNOWN_SUBJECT_TYPES, SKIP_ASPIRANTES
+from .config import REQUEST_TIMEOUT, SKIP_ASPIRANTES
 from .consts import GROUP_TYPE_ASPIRANTES, GROUP_NAME_PARTS_ASPIRANTES, GroupType, GROUP_TYPE_MASTERS, \
     GROUP_TYPE_REGULAR, GROUP_NAME_ASPIRANTES_PATTERN, GROUP_NAME_DEFAULT_PATTERN, GROUP_NAME_PARTS_DEFAULT, WeekMark, \
     SubjectType, SUBJECT_TYPES
@@ -29,6 +29,8 @@ class TimetableNotFoundException(Exception):
 
 @dataclass(frozen=True, kw_only=True)
 class GroupBase:
+    """Базовый датакласс группы для хранения независимой информации"""
+
     origin_name: str
     note: Optional[str]
     course: Optional[int]
@@ -55,17 +57,23 @@ class GroupBase:
 
 @dataclass(frozen=True, kw_only=True)
 class Group(GroupBase):
+    """Датакласс группы с кодом (аббревиатурой) структуры (факультета/института)"""
+
     faculty_code: str
 
 
 @dataclass(frozen=True, kw_only=True)
 class LessonTime:
+    """Датакласс для хранения времени пар (используется лишь в одном месте)"""
+
     start: int
     end: int
 
 
 @dataclass(frozen=True, kw_only=True)
 class TeacherSmall:
+    """Датакласс для малого объёма информации о преподавателях"""
+
     initials: str
     role: str
 
@@ -86,6 +94,8 @@ class TeacherSmall:
 
 @dataclass(frozen=True, kw_only=True)
 class LessonBase:
+    """Базовый датакласс пары для хранения независимой информации"""
+
     lesson_number: int
     week_day: int
     week_mark: WeekMark
@@ -96,6 +106,8 @@ class LessonBase:
 
 @dataclass(frozen=True, kw_only=True)
 class Lesson(LessonBase):
+    """Датакласс пары с указанием преподавателей, названия и типа предмета и места проведения"""
+
     teachers: tuple[TeacherSmall]
     subject_name: Optional[str]
     subject_type: Optional[SubjectType]
@@ -124,6 +136,8 @@ AllGroupsSchedules: TypeAlias = dict[str, dict[Group, Optional[tuple[Lesson]]]]
 
 
 def group_type_checker(faculty_code: str, name_parts: dict[str, str]) -> GroupType:
+    """Функция для проверки типа группы на основе частей названия"""
+
     if len(name_parts) == len(GROUP_NAME_PARTS_ASPIRANTES) or faculty_code == "АСП":
         return GROUP_TYPE_ASPIRANTES
     if name_parts.get("is_master_1") or name_parts.get("is_master_2"):
@@ -131,7 +145,9 @@ def group_type_checker(faculty_code: str, name_parts: dict[str, str]) -> GroupTy
     return GROUP_TYPE_REGULAR
 
 
-def _parse_group_name(pattern: re.Pattern, pattern_parts: tuple[str, ...], faculty_code: str, group_body: str) -> Group:
+def parse_group_name(pattern: re.Pattern, pattern_parts: tuple[str, ...], faculty_code: str, group_body: str) -> Group:
+    """Функция для разбора названия группы на части"""
+
     try:
         found: tuple[str, ...] = re.findall(pattern, group_body)[0]
     except IndexError as _:
@@ -156,6 +172,8 @@ def _parse_group_name(pattern: re.Pattern, pattern_parts: tuple[str, ...], facul
 
 
 def parse_group_by_name(group_name: str) -> Group:
+    """Автоматический парсер названия группы (без необходимости указывания паттерна)"""
+
     faculty_code, group_body = group_name.split("-", 1)
 
     if not faculty_code:
@@ -164,37 +182,19 @@ def parse_group_by_name(group_name: str) -> Group:
     if faculty_code == "АСП":
         if SKIP_ASPIRANTES:
             raise SkipAspirantesException
-        return _parse_group_name(GROUP_NAME_ASPIRANTES_PATTERN, GROUP_NAME_PARTS_ASPIRANTES, faculty_code, group_body)
+        return parse_group_name(GROUP_NAME_ASPIRANTES_PATTERN, GROUP_NAME_PARTS_ASPIRANTES, faculty_code, group_body)
     else:
-        return _parse_group_name(GROUP_NAME_DEFAULT_PATTERN, GROUP_NAME_PARTS_DEFAULT, faculty_code, group_body)
+        return parse_group_name(GROUP_NAME_DEFAULT_PATTERN, GROUP_NAME_PARTS_DEFAULT, faculty_code, group_body)
 
 
-async def fetch_json(session: ClientSession, url: str) -> str:
+async def fetch_json(session: ClientSession, url: str) -> dict:
     async with session.get(url, timeout=REQUEST_TIMEOUT) as response:
         return await response.json()
 
 
-def handle_lesson_times(lesson_time_data: list[dict[str, str]]) -> dict[int, LessonTime]:
-    times: dict[int, LessonTime] = {}
-
-    for lesson_num, lesson_time in enumerate(lesson_time_data):
-        start, end = lesson_time.get("start"), lesson_time.get("end")
-
-        if start is None or end is None:
-            raise Exception(f"Нет информации о границах времени пары: {lesson_time}")
-
-        start_hour, start_minutes = start.split(":")
-        end_hour, end_minutes = end.split(":")
-
-        times[lesson_num] = LessonTime(
-            start=int(start_hour) * 60 + int(start_minutes),
-            end=int(end_hour) * 60 + int(end_minutes),
-        )
-
-    return times
-
-
 def determine_subject_type(subject_str: Optional[str]) -> Optional[SubjectType]:
+    """Функция для определения типа предмета"""
+
     if subject_str is None:
         return None
 
@@ -206,6 +206,8 @@ def determine_subject_type(subject_str: Optional[str]) -> Optional[SubjectType]:
 
 
 def clean_subject_name(subject_str: Optional[str], subject_type: Optional[SubjectType]) -> Optional[str]:
+    """Функция для очистки названия предмета от его типа"""
+
     if subject_str is None or subject_type is None:
         return None
 
@@ -219,98 +221,11 @@ def clean_subject_name(subject_str: Optional[str], subject_type: Optional[Subjec
 
 
 def parse_teacher_name(teacher_str: str) -> list[tuple[str, str]]:
+    """Функция для парсинга имен и ролей преподавателей"""
+
     teachers = re.findall(r'([^,(]+?)\s*\(([^()]*(?:\(.*?\)[^()]*)*)\)', teacher_str)
 
     return [(teacher_name.strip(), teacher_role.strip()) for teacher_name, teacher_role in teachers]
-
-
-def handle_teachers(teachers_str: str) -> set[TeacherSmall]:
-    teachers: set[TeacherSmall] = set()
-    teachers_infos: list[tuple[str, str]] = re.findall(r'([^,(]+?)\s*\(([^()]*(?:\(.*?\)[^()]*)*)\)', teachers_str)
-
-    for teacher_info in teachers_infos:
-        teachers.add(
-            TeacherSmall(
-                initials=teacher_info[0].strip(),
-                role=teacher_info[1].strip(),
-            )
-        )
-
-    return teachers
-
-
-def handle_lesson(lesson_info: dict[str, Any], times: dict[int, LessonTime]) -> Lesson:
-    lesson_number: Optional[int] = lesson_info.get("lessonNumber")
-    week_day: Optional[int] = lesson_info.get("weekDay")
-    week_mark: Optional[WeekMark] = lesson_info.get("weekMark")
-
-    size_x: Optional[int] = lesson_info.get("sizeX")
-    position_x: Optional[int] = lesson_info.get("positionX")
-
-    texts: Optional[list[str]] = lesson_info.get("texts")
-
-    if any(map(lambda x: x is None, [
-        lesson_number, week_day, week_mark, size_x, position_x, texts
-    ])) or len(texts) < 4:
-        if SKIP_BAD_LESSONS:
-            raise SkipLessonException
-        raise KeyError(f"У пары нет нужной информации: {lesson_info}")
-
-    subgroup: Optional[int] = position_x if size_x == 2 else None
-
-    subject: Optional[str] = None if texts[1] is None else texts[1].strip()
-    teachers_str: Optional[str] = None if texts[2] is None else texts[2].strip()
-    place: Optional[str] = None if texts[3] is None else texts[3].strip()
-
-    subject_type: Optional[SubjectType] = determine_subject_type(subject)
-    subject_name: Optional[str] = clean_subject_name(subject, subject_type)
-
-    if SKIP_UNKNOWN_SUBJECT_TYPES and subject_type is None:
-        raise SkipLessonException
-
-    return Lesson(
-        lesson_number=lesson_number,
-        week_day=week_day,
-        week_mark=week_mark,
-        time_start=times[lesson_number].start,
-        time_end=times[lesson_number].end,
-        subject_name=subject_name,
-        subject_type=subject_type,
-        place=place,
-        teachers=tuple(handle_teachers(teachers_str)),
-        subgroup=subgroup,
-    )
-
-
-def handle_schedule_response(json_page: dict[str, Union[str, dict[str, Any]]]) -> Optional[tuple[Lesson]]:
-    message: Optional[str] = json_page.get("message")
-
-    if message is not None:
-        # В ответе API есть опечатка: вместо "не найдено" написано "на найдено"
-        if "расписание на найдено" in message.lower() or "расписание не найдено" in message.lower():
-            return None
-
-    lesson_time_data: Optional[list[dict[str, str]]] = json_page.get("lessonTimeData")
-
-    if lesson_time_data is None:
-        raise KeyError(f"Нет информации о времени пар у группы: {json_page}")
-
-    lessons_containers: Optional[list[dict[str, Any]]] = json_page.get("lessonsContainers")
-
-    if lessons_containers is None:
-        raise KeyError(f"Error: {json_page}")
-
-    times: dict[int, LessonTime] = handle_lesson_times(lesson_time_data)
-
-    lessons: list[Lesson] = []
-    for lesson_info in lessons_containers:
-        try:
-            lesson: Lesson = handle_lesson(lesson_info, times)
-        except SkipLessonException:
-            continue
-
-        lessons.append(lesson)
-    return tuple(lessons)
 
 
 class CustomEncoder(JSONEncoder):
