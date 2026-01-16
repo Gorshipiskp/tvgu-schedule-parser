@@ -84,7 +84,6 @@ class LessonBase:
     week_mark: WeekMark
     time_start: int
     time_end: int
-    place: Optional[str]
     subgroup: Optional[str]
 
 
@@ -93,6 +92,7 @@ class Lesson(LessonBase):
     teachers: tuple[TeacherSmall]
     subject_name: Optional[str]
     subject_type: Optional[SubjectType]
+    place: str
 
     def _identify(self) -> tuple[WeekMark, int, int, Optional[SubjectType], Optional[str], Optional[str]]:
         return (
