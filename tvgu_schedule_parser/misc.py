@@ -5,7 +5,7 @@ from typing import Optional, Union, Any, TypeAlias
 
 from aiohttp import ClientSession
 
-from .config import REQUEST_TIMEOUT, SKIP_BAD_LESSONS, SKIP_UNKNOWN_SUBJECT_TYPES
+from .config import REQUEST_TIMEOUT, SKIP_BAD_LESSONS, SKIP_UNKNOWN_SUBJECT_TYPES, SKIP_ASPIRANTES
 from .consts import GROUP_TYPE_ASPIRANTES, GROUP_NAME_PARTS_ASPIRANTES, GroupType, GROUP_TYPE_MASTERS, \
     GROUP_TYPE_REGULAR, GROUP_NAME_ASPIRANTES_PATTERN, GROUP_NAME_DEFAULT_PATTERN, GROUP_NAME_PARTS_DEFAULT, WeekMark, \
     SubjectType, SUBJECT_TYPES
@@ -16,6 +16,10 @@ class SkipLessonException(Exception):
 
 
 class UnHandlingGroupException(Exception):
+    pass
+
+
+class SkipAspirantesException(Exception):
     pass
 
 
@@ -158,6 +162,8 @@ def parse_group_by_name(group_name: str) -> Group:
         raise ValueError(f"Факультет не определён для {group_name}")
 
     if faculty_code == "АСП":
+        if SKIP_ASPIRANTES:
+            raise SkipAspirantesException
         return _parse_group_name(GROUP_NAME_ASPIRANTES_PATTERN, GROUP_NAME_PARTS_ASPIRANTES, faculty_code, group_body)
     else:
         return _parse_group_name(GROUP_NAME_DEFAULT_PATTERN, GROUP_NAME_PARTS_DEFAULT, faculty_code, group_body)

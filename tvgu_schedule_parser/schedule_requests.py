@@ -6,7 +6,8 @@ import aiohttp
 from aiohttp import ClientSession, TCPConnector
 
 from .config import API_ALL_GROUPS, API_SCHEDULE, PAIRS_SCHEDULE_TYPE, MAX_CONCURRENT_REQUESTS
-from .misc import parse_group_by_name, Group, UnHandlingGroupException, fetch_json, handle_schedule_response, Lesson
+from .misc import parse_group_by_name, Group, UnHandlingGroupException, fetch_json, handle_schedule_response, Lesson, \
+    SkipAspirantesException
 
 
 async def get_all_groups_by_faculty_key(show_warnings: bool = False) -> dict[str, list[Group]]:
@@ -29,6 +30,8 @@ async def get_all_groups_by_faculty_key(show_warnings: bool = False) -> dict[str
         except UnHandlingGroupException:
             if show_warnings:
                 print("Неизвестный шаблон группы:", group_name)
+            continue
+        except SkipAspirantesException:
             continue
 
         all_groups[group.faculty_code].append(group)
