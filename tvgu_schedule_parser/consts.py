@@ -33,5 +33,6 @@ SUBJECT_TYPES: Final[dict[SubjectType, list[str]]] = {
     "lecture": ["Лекция"],
     "labwork": ["Лаб. работа"],
     "practice": ["Практика", "Практическое занятие"],
-    "seminar": ["Семинар"]
+    "seminar": ["Семинар"],
+    "unknown": [],
 }
