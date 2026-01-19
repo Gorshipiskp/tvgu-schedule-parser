@@ -13,7 +13,7 @@ from .misc import AllGroupsSchedules, Group, Lesson, fetch_json, parse_group_by_
     SkipAspirantesException, LessonTime, SkipLessonException, determine_subject_type, clean_subject_name, TeacherSmall
 
 
-async def get_all_tvgu_schedules(show_warnings: bool = True) -> AllGroupsSchedules:
+async def get_all_tvgu_schedules(show_warnings: bool = False) -> AllGroupsSchedules:
     """Асинхронная функция для получения расписания всех групп"""
 
     faculties_groups: dict[str, list[Group]] = await get_all_groups_by_faculty_key(show_warnings)
