@@ -137,7 +137,7 @@ def handle_lesson(lesson_info: dict[str, Any], times: dict[int, LessonTime]) -> 
     teachers_str: Optional[str] = None if texts[2] is None else texts[2].strip()
     place: Optional[str] = None if texts[3] is None else texts[3].strip()
 
-    subject_type: Optional[SubjectType] = determine_subject_type(subject)
+    subject_type: SubjectType = determine_subject_type(subject)
     subject_name: Optional[str] = clean_subject_name(subject, subject_type)
 
     if SKIP_UNKNOWN_SUBJECT_TYPES and subject_type is None:

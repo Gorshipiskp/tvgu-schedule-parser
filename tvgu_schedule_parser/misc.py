@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from json import JSONEncoder
-from typing import Optional, TypeAlias
+from typing import Optional
 
 from aiohttp import ClientSession
 
@@ -110,10 +110,10 @@ class Lesson(LessonBase):
 
     teachers: tuple[TeacherSmall, ...]
     subject_name: Optional[str]
-    subject_type: Optional[SubjectType]
+    subject_type: SubjectType
     place: str
 
-    def _identify(self) -> tuple[WeekMark, int, int, Optional[SubjectType], Optional[str], Optional[str]]:
+    def _identify(self) -> tuple[WeekMark, int, int, SubjectType, Optional[str], Optional[str]]:
         return (
             self.week_mark,
             self.week_day,
@@ -132,7 +132,7 @@ class Lesson(LessonBase):
         return NotImplemented
 
 
-AllGroupsSchedules: TypeAlias = dict[str, dict[Group, Optional[tuple[Lesson]]]]
+AllGroupsSchedules = dict[str, dict[Group, Optional[tuple[Lesson]]]]
 
 
 def group_type_checker(faculty_code: str, name_parts: dict[str, str]) -> GroupType:
@@ -192,16 +192,14 @@ async def fetch_json(session: ClientSession, url: str) -> dict:
         return await response.json()
 
 
-def determine_subject_type(subject_str: Optional[str]) -> Optional[SubjectType]:
+def determine_subject_type(subject_str: Optional[str]) -> SubjectType:
     """Функция для определения типа предмета"""
 
-    if subject_str is None:
-        return None
-
-    for subject_type, type_phrases in SUBJECT_TYPES.items():
-        for phrase in type_phrases:
-            if phrase.lower() in subject_str.lower():
-                return subject_type
+    if subject_str is not None:
+        for subject_type, type_phrases in SUBJECT_TYPES.items():
+            for phrase in type_phrases:
+                if phrase.lower() in subject_str.lower():
+                    return subject_type
     return "unknown"
 
 
