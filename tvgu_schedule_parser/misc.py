@@ -38,7 +38,7 @@ class GroupBase:
     number: int
     subgroup_letter: Optional[str]
 
-    def _identify(self) -> tuple[str, int, GroupType, str, Optional[str]]:
+    def _identify(self) -> tuple[str, int, GroupType, str]:
         return (
             self.origin_name,
             self.number,
@@ -108,7 +108,7 @@ class LessonBase:
 class Lesson(LessonBase):
     """Датакласс пары с указанием преподавателей, названия и типа предмета и места проведения"""
 
-    teachers: tuple[TeacherSmall]
+    teachers: tuple[TeacherSmall, ...]
     subject_name: Optional[str]
     subject_type: Optional[SubjectType]
     place: str

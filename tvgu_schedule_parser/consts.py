@@ -19,14 +19,14 @@ GROUP_NAME_PARTS_ASPIRANTES: Final[tuple[str, ...]] = (
 )
 GROUP_NAME_ASPIRANTES_PATTERN: re.Pattern = re.compile(r"([0-9])([0-9]{2})(?:\(([0-9а-яА-ЯеёЕЁ]+)\))?(?:-(\w+))?")
 
-WeekMark = TypeAlias = Literal["every", "minus", "plus", "none"]
+WeekMark = Literal["every", "minus", "plus", "none"]
 
 WEEK_MARK_EVERY: Final[WeekMark] = "every"
 WEEK_MARK_PLUS: Final[WeekMark] = "plus"
 WEEK_MARK_MINUS: Final[WeekMark] = "minus"
 WEEK_MARK_NONE: Final[WeekMark] = "none"
 
-SubjectType: TypeAlias = Literal["lecture", "labwork", "practice", "seminar", "unknown"]
+SubjectType = Literal["lecture", "labwork", "practice", "seminar", "unknown"]
 
 # Возможные типы предметов и их возможные фразы в названии предмета
 SUBJECT_TYPES: Final[dict[SubjectType, list[str]]] = {

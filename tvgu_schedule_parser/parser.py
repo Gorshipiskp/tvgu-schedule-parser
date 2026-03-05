@@ -18,7 +18,7 @@ async def get_all_tvgu_schedules(show_warnings: bool = False) -> AllGroupsSchedu
 
     faculties_groups: dict[str, list[Group]] = await get_all_groups_by_faculty_key(show_warnings)
 
-    groups_schedule_requests: list[Coroutine[Any, Any, dict[Group, tuple[Lesson]]]] = [
+    groups_schedule_requests: list[Coroutine[Any, Any, dict[Group, tuple[Lesson, ...]]]] = [
         get_groups_schedules(groups) for groups in faculties_groups.values()
     ]
     groups_schedules: list[dict[Group, tuple[Lesson]]] = await asyncio.gather(*groups_schedule_requests)
@@ -31,14 +31,14 @@ async def get_all_groups_by_faculty_key(show_warnings: bool = False) -> dict[str
 
     try:
         async with aiohttp.ClientSession() as session:
-            jsonned: dict[str, list[str, str]] = await fetch_json(session, API_ALL_GROUPS)
+            jsonned: dict[str, list[Any]] = await fetch_json(session, API_ALL_GROUPS)
     except Exception as e:
         raise e
 
     if "groups" not in jsonned:
         raise Exception(f"Error: {jsonned}")
 
-    all_groups: defaultdict[list] = defaultdict(list)
+    all_groups: defaultdict[str, list] = defaultdict(list)
 
     for group_req in jsonned["groups"]:
         group_name: str = group_req["groupName"]
@@ -56,13 +56,13 @@ async def get_all_groups_by_faculty_key(show_warnings: bool = False) -> dict[str
     return all_groups
 
 
-async def get_groups_schedules(groups: list[Group]) -> dict[Group, tuple[Lesson]]:
+async def get_groups_schedules(groups: list[Group]) -> dict[Group, tuple[Lesson, ...]]:
     """Асинхронная функция для получения расписания групп"""
 
     connector: TCPConnector = aiohttp.TCPConnector(limit=MAX_CONCURRENT_REQUESTS)
 
     async with ClientSession(connector=connector) as session:
-        tasks: list[asyncio.Task] = [
+        tasks: list[Coroutine[Any, Any, dict]] = [
             fetch_json(session, API_SCHEDULE.format(group.origin_name, PAIRS_SCHEDULE_TYPE))
             for group in groups
         ]
@@ -74,7 +74,7 @@ async def get_groups_schedules(groups: list[Group]) -> dict[Group, tuple[Lesson]
     return dict(zip(groups, list(map(handle_schedule_response, schedule_pages))))
 
 
-def handle_schedule_response(json_page: dict[str, Union[str, dict[str, Any]]]) -> Optional[tuple[Lesson]]:
+def handle_schedule_response(json_page: dict[str, Union[str, dict[str, Any]]]) -> Optional[tuple[Lesson, ...]]:
     """Функция для обработки ответа API"""
 
     message: Optional[str] = json_page.get("message")
@@ -119,9 +119,14 @@ def handle_lesson(lesson_info: dict[str, Any], times: dict[int, LessonTime]) -> 
 
     texts: Optional[list[str]] = lesson_info.get("texts")
 
-    if any(map(lambda x: x is None, [
-        lesson_number, week_day, week_mark, size_x, position_x, texts
-    ])) or len(texts) < 4:
+    if (
+            lesson_number is None
+            or week_day is None
+            or week_mark is None
+            or size_x is None
+            or position_x is None
+            or len(texts) < 4
+    ):
         if SKIP_BAD_LESSONS:
             raise SkipLessonException
         raise KeyError(f"У пары нет нужной информации: {lesson_info}")

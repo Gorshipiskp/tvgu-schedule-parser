@@ -20,7 +20,7 @@ class Args:
 
 
 def dump_schedules(schedules: AllGroupsSchedules, output_path: str, prettify: bool) -> None:
-    schedules_for_json: dict[str, dict[str, Lesson]] = {
+    schedules_for_json: dict[str, dict[str, Optional[Lesson]]] = {
         faculty_code: {
             group.origin_name: schedule
             for group, schedule in group_schedules.items()
@@ -36,6 +36,8 @@ def dump_schedules(schedules: AllGroupsSchedules, output_path: str, prettify: bo
         cls=CustomEncoder
     )
 
+    return None
+
 
 async def main(args: Args) -> None:
     schedules: AllGroupsSchedules = await get_all_tvgu_schedules(args.show_warnings)
@@ -49,7 +51,7 @@ async def main(args: Args) -> None:
         if args.output_directory is not None:
             directory: Path = Path(args.output_directory)
             directory.mkdir(parents=True, exist_ok=True)
-            output_path = directory / output_path
+            output_path: Path = directory / output_path
 
         dump_schedules(schedules, output_path, args.prettify)
 
@@ -78,9 +80,9 @@ def parse_args() -> Args:
 if __name__ == "__main__":
     # Python >=3.10
 
-    args: Args = parse_args()
+    cur_args: Args = parse_args()
 
-    if args.output is not None and args.output_auto is not None:
+    if cur_args.output is not None and cur_args.output_auto is not None:
         raise ValueError("Одновременно можно использовать параметр -o и -oa")
 
-    asyncio.run(main(args))
+    asyncio.run(main(cur_args))
